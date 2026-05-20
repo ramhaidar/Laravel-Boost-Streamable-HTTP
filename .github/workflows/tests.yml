@@ -68,7 +68,7 @@ jobs:
 
       - name: Upload phpunit logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: phpunit-php${{ matrix.php }}-l${{ matrix.laravel }}
           path: |
@@ -109,7 +109,7 @@ jobs:
 
       - name: Upload phpunit logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: phpunit-prefer-lowest
           path: |
