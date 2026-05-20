@@ -24,9 +24,11 @@ class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->publishes([
-            __DIR__.'/../config/laravel-boost-streamable-http.php' => config_path('laravel-boost-streamable-http.php'),
-        ], 'laravel-boost-streamable-http-config');
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../config/laravel-boost-streamable-http.php' => config_path('laravel-boost-streamable-http.php'),
+            ], 'laravel-boost-streamable-http-config');
+        }
 
         if (! config('laravel-boost-streamable-http.enabled')) {
             return;

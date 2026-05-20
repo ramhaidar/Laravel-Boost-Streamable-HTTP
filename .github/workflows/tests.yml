@@ -66,6 +66,14 @@ jobs:
       - name: Run tests
         run: vendor/bin/phpunit
 
+      - name: Upload phpunit logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-php${{ matrix.php }}-l${{ matrix.laravel }}
+          path: |
+            .phpunit.cache
+
   prefer-lowest:
     runs-on: ubuntu-latest
     name: Prefer-lowest (PHP 8.2 / L11 floor)
@@ -98,6 +106,14 @@ jobs:
 
       - name: Run tests
         run: vendor/bin/phpunit
+
+      - name: Upload phpunit logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-prefer-lowest
+          path: |
+            .phpunit.cache
 
   pint:
     runs-on: ubuntu-latest

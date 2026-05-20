@@ -17,14 +17,14 @@ It does not modify or fork Laravel Boost. It is a thin opt-in service provider.
 
 - PHP `^8.2`
 - Laravel 11 or 12
-- [`laravel/boost`](https://github.com/laravel/boost) `^1.0` or `^2.0`
-- [`laravel/mcp`](https://github.com/laravel/mcp) `^0.7.0` or `^1.0`
+- [`laravel/boost`](https://github.com/laravel/boost) `^2.0`
+- [`laravel/mcp`](https://github.com/laravel/mcp) `^0.7.0`
 
 ### Compatibility matrix
 
-| This package | Laravel        | PHP           | laravel/boost  | laravel/mcp     |
-|--------------|----------------|---------------|----------------|-----------------|
-| `0.x`        | 11.x, 12.x     | 8.2, 8.3, 8.4 | 1.x, 2.x       | 0.7.x, 1.x      |
+| This package | Laravel        | PHP           | laravel/boost  | laravel/mcp |
+|--------------|----------------|---------------|----------------|-------------|
+| `0.x`        | 11.x, 12.x     | 8.2, 8.3, 8.4 | 2.x            | 0.7.x       |
 
 `laravel/mcp` `<0.7.1` registers GET + POST on the endpoint. `>=0.7.1` also registers DELETE per the MCP spec. The package handles both transparently.
 

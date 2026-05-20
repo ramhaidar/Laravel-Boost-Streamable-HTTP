@@ -193,9 +193,10 @@ class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
             'Accept' => 'application/json, text/event-stream',
         ]);
 
-        // The endpoint must be wired and reachable (no 404, no 405).
+        // The endpoint must be wired and reachable (no 404, no 405, no 5xx).
         $this->assertNotSame(404, $response->getStatusCode(), 'Endpoint not registered');
         $this->assertNotSame(405, $response->getStatusCode(), 'POST not accepted');
+        $this->assertLessThan(500, $response->getStatusCode(), 'Endpoint returned server error');
 
         // 2xx response: assert JSON-RPC 2.0 response shape.
         if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
