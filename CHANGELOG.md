@@ -14,5 +14,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `class_exists` guards with informative `RuntimeException` if `laravel/boost` or `laravel/mcp` is missing.
 - HTTP functional test posting JSON-RPC `initialize` against the registered endpoint.
 - Test coverage: disabled-by-default, default path, custom path, middleware applied to all verbs, prefix, name prefix, domain, production warn-log toggling, JSON-RPC initialize, stdio compatibility.
-- GitHub Actions CI matrix (PHP × Laravel × MCP).
-- Laravel Pint config.
+- GitHub Actions CI matrix (PHP × Laravel × MCP), plus separate Pint and Larastan jobs.
+- Laravel Pint config and Larastan (level 8) config.
