@@ -18,24 +18,10 @@ jobs:
         laravel: ['11.*', '12.*']
         mcp: ['^0.7.0']
         include:
-          - php: '8.2'
-            laravel: '11.*'
-            testbench: '9.*'
-          - php: '8.3'
-            laravel: '11.*'
-            testbench: '9.*'
-          - php: '8.4'
-            laravel: '11.*'
-            testbench: '9.*'
-          - php: '8.2'
-            laravel: '12.*'
-            testbench: '10.*'
-          - php: '8.3'
-            laravel: '12.*'
-            testbench: '10.*'
-          - php: '8.4'
-            laravel: '12.*'
-            testbench: '10.*'
+          - laravel: '11.*'
+            testbench: '^9.5'
+          - laravel: '12.*'
+            testbench: '^10.0'
 
     steps:
       - name: Checkout
@@ -53,24 +39,27 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.composer/cache/files
-          key: deps-${{ runner.os }}-php${{ matrix.php }}-l${{ matrix.laravel }}-mcp${{ matrix.mcp }}
+          key: deps-${{ runner.os }}-php${{ matrix.php }}-l${{ matrix.laravel }}-mcp${{ matrix.mcp }}-${{ hashFiles('**/composer.json') }}
 
-      - name: Install dependencies
+      - name: Pin Laravel and MCP versions
         run: |
-          composer require --dev --no-update --no-interaction \
+          composer require --no-update --no-interaction \
             "illuminate/contracts:${{ matrix.laravel }}" \
             "illuminate/routing:${{ matrix.laravel }}" \
             "illuminate/support:${{ matrix.laravel }}" \
-            "orchestra/testbench:${{ matrix.testbench }}" \
             "laravel/mcp:${{ matrix.mcp }}"
-          composer update --prefer-dist --no-interaction --no-progress
+          composer require --dev --no-update --no-interaction \
+            "orchestra/testbench:${{ matrix.testbench }}"
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
 
       - name: Run tests
         run: vendor/bin/phpunit
 
   prefer-lowest:
     runs-on: ubuntu-latest
-    name: Prefer-lowest
+    name: Prefer-lowest (PHP 8.2 / L11 floor)
 
     steps:
       - name: Checkout
@@ -83,6 +72,17 @@ jobs:
           extensions: mbstring, intl, json, openssl, dom, fileinfo
           coverage: none
           tools: composer:v2
+
+      - name: Pin floor
+        run: |
+          composer require --no-update --no-interaction \
+            "illuminate/contracts:^11.0" \
+            "illuminate/routing:^11.0" \
+            "illuminate/support:^11.0" \
+            "laravel/mcp:^0.7.0" \
+            "laravel/boost:^2.0"
+          composer require --dev --no-update --no-interaction \
+            "orchestra/testbench:^9.5"
 
       - name: Install dependencies (prefer-lowest)
         run: composer update --prefer-lowest --prefer-stable --prefer-dist --no-interaction --no-progress
@@ -102,6 +102,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
+          extensions: mbstring, intl, json, openssl, dom, fileinfo
+          coverage: none
           tools: composer:v2
 
       - name: Install dependencies
@@ -122,6 +124,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
+          extensions: mbstring, intl, json, openssl, dom, fileinfo
+          coverage: none
           tools: composer:v2
 
       - name: Install dependencies
