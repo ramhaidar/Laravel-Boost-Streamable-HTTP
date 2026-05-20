@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Ramhaidar\LaravelBoostStreamableHttp;
 
-use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Boost\Mcp\Boost;
 use Laravel\Mcp\Facades\Mcp;
+use RuntimeException;
 
 class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
 {
@@ -29,14 +30,31 @@ class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
             return;
         }
 
+        if (! class_exists(Boost::class)) {
+            throw new RuntimeException(
+                'Laravel\\Boost\\Mcp\\Boost not found. Install laravel/boost: composer require laravel/boost'
+            );
+        }
+
+        if (! class_exists(Mcp::class)) {
+            throw new RuntimeException(
+                'Laravel\\Mcp\\Facades\\Mcp not found. Install laravel/mcp: composer require laravel/mcp'
+            );
+        }
+
         $path = (string) config('laravel-boost-streamable-http.path', '/_boost/mcp');
-
-        $registration = Mcp::web($path, Boost::class);
-
         $middleware = (array) config('laravel-boost-streamable-http.middleware', []);
 
-        if ($middleware !== [] && $registration instanceof Route) {
-            $registration->middleware($middleware);
+        $register = static function () use ($path): void {
+            Mcp::web($path, Boost::class);
+        };
+
+        if ($middleware !== []) {
+            Route::middleware($middleware)->group($register);
+
+            return;
         }
+
+        $register();
     }
 }
