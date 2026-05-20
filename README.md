@@ -16,7 +16,7 @@ It does not modify or fork Laravel Boost. It is a thin opt-in service provider.
 ## Requirements
 
 - PHP `^8.2`
-- Laravel 11, 12, or 13
+- Laravel 11 or 12
 - [`laravel/boost`](https://github.com/laravel/boost) `^1.0` or `^2.0`
 - [`laravel/mcp`](https://github.com/laravel/mcp) `^0.7.0` or `^1.0`
 
