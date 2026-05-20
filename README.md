@@ -26,7 +26,7 @@ It does not modify or fork Laravel Boost. It is a thin opt-in service provider.
 |--------------|----------------|---------------|----------------|-------------|
 | `0.x`        | 11.x, 12.x     | 8.2, 8.3, 8.4 | 2.x            | 0.7.x       |
 
-`laravel/mcp` registers GET, POST, and DELETE on the configured path per the MCP Streamable HTTP spec. The package wraps all three verbs in your configured middleware.
+`laravel/mcp` 0.7.x registers GET, POST, and DELETE routes on the configured path. Only POST handles MCP traffic; GET and DELETE return `405 Method Not Allowed` with `Allow: POST` per the current upstream implementation. The package wraps all three verbs in your configured middleware so the endpoint cannot be probed without authorization.
 
 ## Installation
 
@@ -159,8 +159,8 @@ Exact client config syntax varies by MCP client (Claude Desktop, Cursor, Continu
 - After changing config or env values, run `php artisan config:clear` and `php artisan route:clear`.
 - If you cache routes (`php artisan route:cache`), re-cache after enabling.
 
-**405 Method Not Allowed on GET**
-- That is expected. The MCP spec uses POST for client-to-server calls. GET and DELETE return 405 by design and exist only to advertise the endpoint.
+**405 Method Not Allowed on GET or DELETE**
+- That is expected behavior of `laravel/mcp` 0.7.x. The MCP spec uses POST for client-to-server calls. The current upstream implementation returns 405 on GET and DELETE; only POST handles MCP traffic.
 
 **`Class "Laravel\\Boost\\Mcp\\Boost" not found`**
 - `laravel/boost` is not installed in this app, or the version you use no longer ships that class. Run `composer require laravel/boost` and verify the installed version exposes `Laravel\Boost\Mcp\Boost`.
