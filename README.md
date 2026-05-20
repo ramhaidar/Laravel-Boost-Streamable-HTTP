@@ -18,13 +18,13 @@ It does not modify or fork Laravel Boost. It is a thin opt-in service provider.
 - PHP `^8.2`
 - Laravel 11, 12, or 13
 - [`laravel/boost`](https://github.com/laravel/boost) `^1.0` or `^2.0`
-- [`laravel/mcp`](https://github.com/laravel/mcp) `^0.5.1`, `^0.6.0`, `^0.7.0`, or `^1.0`
+- [`laravel/mcp`](https://github.com/laravel/mcp) `^0.7.0` or `^1.0`
 
 ### Compatibility matrix
 
-| This package | Laravel        | PHP           | laravel/boost  | laravel/mcp                          |
-|--------------|----------------|---------------|----------------|--------------------------------------|
-| `0.x`        | 11.x, 12.x, 13.x | 8.2, 8.3, 8.4 | 1.x, 2.x       | 0.5.x, 0.6.x, 0.7.x, 1.x             |
+| This package | Laravel        | PHP           | laravel/boost  | laravel/mcp     |
+|--------------|----------------|---------------|----------------|-----------------|
+| `0.x`        | 11.x, 12.x     | 8.2, 8.3, 8.4 | 1.x, 2.x       | 0.7.x, 1.x      |
 
 `laravel/mcp` `<0.7.1` registers GET + POST on the endpoint. `>=0.7.1` also registers DELETE per the MCP spec. The package handles both transparently.
 
@@ -116,7 +116,7 @@ Leave any value `null` (or unset the environment variable) to skip that attribut
 
 ### Production warning log
 
-If the endpoint is enabled in the `production` environment **and** no middleware is configured, the package writes a single warning to the application log on boot. This is a reminder, not an enforcement. Set `warn_unprotected_in_production` to `false` to silence it:
+If the endpoint is enabled in the `production` environment **and** no middleware is configured, the package writes a single warning to the application log on Artisan/console boot. The warning is gated on `runningInConsole()` to avoid spamming PHP-FPM request logs. It surfaces during commands like `php artisan serve`, `route:list`, `config:cache`, `queue:work`, or any deploy command. Set `warn_unprotected_in_production` to `false` to silence it:
 
 ```env
 LARAVEL_BOOST_STREAMABLE_HTTP_WARN_UNPROTECTED=false
@@ -173,6 +173,9 @@ Exact client config syntax varies by MCP client (Claude Desktop, Cursor, Continu
 
 **Route caching**
 - The package registers routes inside the service provider's `boot()` method. Standard `route:cache` works.
+
+**`config:cache` and env values**
+- Calls to `env()` inside the published config file return `null` after `php artisan config:cache` if the env variable was not set at cache time. If the endpoint stops responding after caching, run `php artisan config:clear`, set the env vars, then re-cache.
 
 ## Compatibility
 

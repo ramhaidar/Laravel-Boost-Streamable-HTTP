@@ -68,6 +68,28 @@ jobs:
       - name: Run tests
         run: vendor/bin/phpunit
 
+  prefer-lowest:
+    runs-on: ubuntu-latest
+    name: Prefer-lowest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, json, openssl, dom, fileinfo
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies (prefer-lowest)
+        run: composer update --prefer-lowest --prefer-stable --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests
+        run: vendor/bin/phpunit
+
   pint:
     runs-on: ubuntu-latest
     name: Pint

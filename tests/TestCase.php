@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ramhaidar\LaravelBoostStreamableHttp\Tests;
 
+use Illuminate\Foundation\Application;
 use Laravel\Boost\BoostServiceProvider;
 use Laravel\Mcp\Server\McpServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -12,7 +13,7 @@ use Ramhaidar\LaravelBoostStreamableHttp\LaravelBoostStreamableHttpServiceProvid
 abstract class TestCase extends Orchestra
 {
     /**
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return array<int, class-string>
      */
     protected function getPackageProviders($app)

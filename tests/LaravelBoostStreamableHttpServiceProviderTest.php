@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace Ramhaidar\LaravelBoostStreamableHttp\Tests;
 
+use Illuminate\Foundation\Application;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route as Router;
+use Laravel\Boost\BoostServiceProvider;
+use Laravel\Boost\Mcp\Boost;
+use Mockery;
+use Psr\Log\LoggerInterface;
+use Ramhaidar\LaravelBoostStreamableHttp\LaravelBoostStreamableHttpServiceProvider;
+use stdClass;
 
 class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
 {
     /** @var array<string, mixed> */
     protected array $configOverrides = [];
 
-    /** @var string|null */
     protected ?string $forcedEnvironment = null;
 
     protected bool $spyLog = false;
@@ -178,7 +184,7 @@ class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
             'method' => 'initialize',
             'params' => [
                 'protocolVersion' => '2025-06-18',
-                'capabilities' => new \stdClass,
+                'capabilities' => new stdClass,
                 'clientInfo' => ['name' => 'pkg-test', 'version' => '0.0.1'],
             ],
         ];
@@ -190,17 +196,33 @@ class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
         // The endpoint must be wired and reachable (no 404, no 405).
         $this->assertNotSame(404, $response->getStatusCode(), 'Endpoint not registered');
         $this->assertNotSame(405, $response->getStatusCode(), 'POST not accepted');
+
+        // 2xx response: assert JSON-RPC 2.0 response shape.
+        if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
+            $body = (string) $response->getContent();
+
+            // Server may return an SSE stream; tolerate both shapes by extracting the first JSON object.
+            $json = $this->extractFirstJsonObject($body);
+
+            $this->assertIsArray($json, 'Response body did not contain a JSON object');
+            $this->assertSame('2.0', $json['jsonrpc'] ?? null, 'jsonrpc field missing or wrong');
+            $this->assertSame(1, $json['id'] ?? null, 'id field missing or did not echo');
+            $this->assertTrue(
+                array_key_exists('result', $json) || array_key_exists('error', $json),
+                'JSON-RPC response missing both result and error',
+            );
+        }
     }
 
     public function test_provider_loads_without_breaking_boost_stdio(): void
     {
-        $this->assertTrue($this->app->providerIsLoaded(\Laravel\Boost\BoostServiceProvider::class));
-        $this->assertTrue($this->app->providerIsLoaded(\Ramhaidar\LaravelBoostStreamableHttp\LaravelBoostStreamableHttpServiceProvider::class));
-        $this->assertTrue(class_exists(\Laravel\Boost\Mcp\Boost::class));
+        $this->assertTrue($this->app->providerIsLoaded(BoostServiceProvider::class));
+        $this->assertTrue($this->app->providerIsLoaded(LaravelBoostStreamableHttpServiceProvider::class));
+        $this->assertTrue(class_exists(Boost::class));
     }
 
     /**
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      */
     protected function getEnvironmentSetUp($app): void
     {
@@ -213,7 +235,7 @@ class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
         }
 
         if ($this->spyLog) {
-            Log::swap(\Mockery::spy(\Psr\Log\LoggerInterface::class));
+            Log::swap(Mockery::spy(LoggerInterface::class));
         }
     }
 
@@ -222,6 +244,48 @@ class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
         foreach (Router::getRoutes()->getRoutes() as $route) {
             if ($route->uri() === $uri && in_array($method, $route->methods(), true)) {
                 return $route;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Best-effort extraction of the first JSON object from a response body.
+     * Handles plain JSON and minimal SSE framing (`data: {...}` lines).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function extractFirstJsonObject(string $body): ?array
+    {
+        $trimmed = trim($body);
+
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if ($trimmed[0] === '{') {
+            $decoded = json_decode($trimmed, true);
+
+            return is_array($decoded) ? $decoded : null;
+        }
+
+        // Try SSE: pick the first `data: ...` line containing a JSON object.
+        foreach (preg_split('/\r?\n/', $trimmed) ?: [] as $line) {
+            if (! str_starts_with($line, 'data:')) {
+                continue;
+            }
+
+            $payload = trim(substr($line, 5));
+
+            if ($payload === '' || $payload[0] !== '{') {
+                continue;
+            }
+
+            $decoded = json_decode($payload, true);
+
+            if (is_array($decoded)) {
+                return $decoded;
             }
         }
 

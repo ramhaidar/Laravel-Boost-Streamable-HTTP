@@ -18,7 +18,7 @@ class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(
             __DIR__.'/../config/laravel-boost-streamable-http.php',
-            'laravel-boost-streamable-http'
+            'laravel-boost-streamable-http',
         );
     }
 
@@ -34,13 +34,13 @@ class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
 
         if (! class_exists(Boost::class)) {
             throw new RuntimeException(
-                'Laravel\\Boost\\Mcp\\Boost not found. Install laravel/boost: composer require laravel/boost'
+                'Laravel\\Boost\\Mcp\\Boost not found. Install laravel/boost: composer require laravel/boost',
             );
         }
 
         if (! class_exists(Mcp::class)) {
             throw new RuntimeException(
-                'Laravel\\Mcp\\Facades\\Mcp not found. Install laravel/mcp: composer require laravel/mcp'
+                'Laravel\\Mcp\\Facades\\Mcp not found. Install laravel/mcp: composer require laravel/mcp',
             );
         }
 
@@ -102,11 +102,11 @@ class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
             return;
         }
 
-        if ($app->environment('production')) {
+        if ($app->environment('production') && $app->runningInConsole()) {
             Log::warning(
                 '[laravel-boost-streamable-http] MCP endpoint enabled in production with no middleware. '.
                 'Laravel Boost exposes powerful capabilities including arbitrary code execution via Tinker. '.
-                'Configure laravel-boost-streamable-http.middleware (e.g. ["auth:sanctum"]) or disable in production.'
+                'Configure laravel-boost-streamable-http.middleware (e.g. ["auth:sanctum"]) or disable in production.',
             );
         }
     }
