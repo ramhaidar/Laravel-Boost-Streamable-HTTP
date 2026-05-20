@@ -44,7 +44,7 @@ jobs:
           tools: composer:v2
 
       - name: Cache Composer
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.composer/cache/files
           key: deps-${{ runner.os }}-php${{ matrix.php }}-l${{ matrix.laravel }}-boost${{ matrix.boost }}-mcp${{ matrix.mcp }}-${{ hashFiles('**/composer.json') }}
