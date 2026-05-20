@@ -28,9 +28,10 @@ class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
     {
         $this->assertNull($this->findRoute('POST', '_boost/mcp'));
         $this->assertNull($this->findRoute('GET', '_boost/mcp'));
+        $this->assertNull($this->findRoute('DELETE', '_boost/mcp'));
     }
 
-    public function test_enabling_registers_get_and_post_at_default_path(): void
+    public function test_enabling_registers_get_post_and_delete_at_default_path(): void
     {
         $this->configOverrides = [
             'laravel-boost-streamable-http.enabled' => true,
@@ -40,6 +41,7 @@ class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
 
         $this->assertNotNull($this->findRoute('POST', '_boost/mcp'));
         $this->assertNotNull($this->findRoute('GET', '_boost/mcp'));
+        $this->assertNotNull($this->findRoute('DELETE', '_boost/mcp'));
     }
 
     public function test_custom_path_is_respected(): void
@@ -67,18 +69,12 @@ class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
         foreach (['POST', 'GET', 'DELETE'] as $verb) {
             $route = $this->findRoute($verb, '_boost/mcp');
 
-            // DELETE may not be registered on older laravel/mcp versions (<0.7.1).
-            if ($route === null) {
-                continue;
-            }
+            $this->assertNotNull($route, "{$verb} route not registered");
 
             $middleware = $route->gatherMiddleware();
             $this->assertContains('auth:sanctum', $middleware, "auth:sanctum missing on {$verb}");
             $this->assertContains('throttle:30,1', $middleware, "throttle missing on {$verb}");
         }
-
-        $this->assertNotNull($this->findRoute('POST', '_boost/mcp'));
-        $this->assertNotNull($this->findRoute('GET', '_boost/mcp'));
     }
 
     public function test_route_prefix_is_applied(): void

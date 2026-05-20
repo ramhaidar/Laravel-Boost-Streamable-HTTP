@@ -26,7 +26,7 @@ It does not modify or fork Laravel Boost. It is a thin opt-in service provider.
 |--------------|----------------|---------------|----------------|-------------|
 | `0.x`        | 11.x, 12.x     | 8.2, 8.3, 8.4 | 2.x            | 0.7.x       |
 
-`laravel/mcp` `<0.7.1` registers GET + POST on the endpoint. `>=0.7.1` also registers DELETE per the MCP spec. The package handles both transparently.
+`laravel/mcp` registers GET, POST, and DELETE on the configured path per the MCP Streamable HTTP spec. The package wraps all three verbs in your configured middleware.
 
 ## Installation
 
@@ -98,7 +98,7 @@ You can protect the endpoint with any Laravel middleware, for example:
 'middleware' => ['auth:sanctum'],
 ```
 
-The configured middleware is applied to **every** verb that `Mcp::web()` registers (GET, POST, and DELETE on `laravel/mcp >=0.7.1`), so unauthenticated probes cannot confirm the endpoint exists.
+The configured middleware is applied to **every** verb that `Mcp::web()` registers (GET, POST, and DELETE), so unauthenticated probes cannot confirm the endpoint exists.
 
 Different projects need different protection. There is no middleware default that fits every app, so this package ships with an empty middleware list and leaves the choice to you.
 
@@ -160,7 +160,7 @@ Exact client config syntax varies by MCP client (Claude Desktop, Cursor, Continu
 - If you cache routes (`php artisan route:cache`), re-cache after enabling.
 
 **405 Method Not Allowed on GET**
-- That is expected. The MCP spec uses POST for client-to-server calls. GET (and DELETE on `laravel/mcp >=0.7.1`) return 405 by design and exist only to advertise the endpoint.
+- That is expected. The MCP spec uses POST for client-to-server calls. GET and DELETE return 405 by design and exist only to advertise the endpoint.
 
 **`Class "Laravel\\Boost\\Mcp\\Boost" not found`**
 - `laravel/boost` is not installed in this app, or the version you use no longer ships that class. Run `composer require laravel/boost` and verify the installed version exposes `Laravel\Boost\Mcp\Boost`.
