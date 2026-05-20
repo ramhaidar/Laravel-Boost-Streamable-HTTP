@@ -6,16 +6,24 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     runs-on: ubuntu-latest
-    name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }} / MCP ${{ matrix.mcp }}
+    name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }} / Boost ${{ matrix.boost }} / MCP ${{ matrix.mcp }}
 
     strategy:
       fail-fast: false
       matrix:
         php: ['8.2', '8.3', '8.4']
         laravel: ['11.*', '12.*']
+        boost: ['^2.0']
         mcp: ['^0.7.0']
         include:
           - laravel: '11.*'
@@ -39,7 +47,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.composer/cache/files
-          key: deps-${{ runner.os }}-php${{ matrix.php }}-l${{ matrix.laravel }}-mcp${{ matrix.mcp }}-${{ hashFiles('**/composer.json') }}
+          key: deps-${{ runner.os }}-php${{ matrix.php }}-l${{ matrix.laravel }}-boost${{ matrix.boost }}-mcp${{ matrix.mcp }}-${{ hashFiles('**/composer.json') }}
 
       - name: Pin Laravel and MCP versions
         run: |
@@ -47,6 +55,7 @@ jobs:
             "illuminate/contracts:${{ matrix.laravel }}" \
             "illuminate/routing:${{ matrix.laravel }}" \
             "illuminate/support:${{ matrix.laravel }}" \
+            "laravel/boost:${{ matrix.boost }}" \
             "laravel/mcp:${{ matrix.mcp }}"
           composer require --dev --no-update --no-interaction \
             "orchestra/testbench:${{ matrix.testbench }}"

@@ -11,6 +11,13 @@
         "ai"
     ],
     "homepage": "https://github.com/ramhaidar/laravel-boost-streamable-http",
+    "authors": [
+        {
+            "name": "ramhaidar",
+            "homepage": "https://github.com/ramhaidar",
+            "role": "Developer"
+        }
+    ],
     "support": {
         "issues": "https://github.com/ramhaidar/laravel-boost-streamable-http/issues",
         "source": "https://github.com/ramhaidar/laravel-boost-streamable-http",

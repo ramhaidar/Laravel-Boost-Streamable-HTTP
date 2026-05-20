@@ -214,7 +214,7 @@ class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
         }
     }
 
-    public function test_provider_loads_without_breaking_boost_stdio(): void
+    public function test_provider_loads_alongside_boost_without_replacing_it(): void
     {
         $this->assertTrue($this->app->providerIsLoaded(BoostServiceProvider::class));
         $this->assertTrue($this->app->providerIsLoaded(LaravelBoostStreamableHttpServiceProvider::class));

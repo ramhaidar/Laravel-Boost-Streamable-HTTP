@@ -74,4 +74,20 @@ CI verifies style on every PR.
 
 ## Security
 
-If you find a security issue, please report it privately via a GitHub Security Advisory on the repository instead of opening a public issue.
+If you find a security issue, please follow [SECURITY.md](.github/SECURITY.md). Do not open a public issue.
+
+## Release process (maintainers)
+
+1. Update `CHANGELOG.md`: rename `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD` and start a fresh `[Unreleased]` heading above.
+2. Verify locally:
+   ```bash
+   composer validate --strict
+   composer test
+   composer test:lint
+   composer analyse
+   ```
+3. Commit the changelog change: `git commit -am "chore: release vX.Y.Z"`.
+4. Tag and push: `git tag vX.Y.Z && git push origin main --tags`.
+5. Verify CI is green for the tag.
+6. If submitting to Packagist for the first time, register the repo at https://packagist.org/packages/submit and enable the GitHub webhook for auto-update.
+7. Draft a GitHub Release for the tag with the CHANGELOG section as the body.
