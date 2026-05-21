@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Laravel 13 support. `illuminate/*` constraints widened to `^11.0|^12.0|^13.0`. `orchestra/testbench` widened to `^9.5|^10.0|^11.0`. `phpunit/phpunit` widened to `^10.5|^11.0|^12.0`. CI matrix gains L13 rows on PHP 8.3 and 8.4 (Laravel 13 requires PHP `^8.3`).
 - Initial implementation. Registers Laravel Boost's MCP server (`Laravel\Boost\Mcp\Boost`) on a Laravel MCP web (Streamable HTTP) endpoint via `Mcp::web(...)`.
 - `enabled`, `path`, `middleware`, `domain`, `prefix`, `as` config keys.
 - Optional production warning log (console-only) when enabled without middleware (`warn_unprotected_in_production`).

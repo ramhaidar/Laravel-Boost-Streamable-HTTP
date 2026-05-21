@@ -15,24 +15,26 @@ It does not modify or fork Laravel Boost. It is a thin opt-in service provider.
 
 ## Requirements
 
-- PHP `^8.2`
-- Laravel 11 or 12
+- PHP `^8.2` (PHP `^8.3` required for Laravel 13)
+- Laravel 11, 12, or 13
 - [`laravel/boost`](https://github.com/laravel/boost) `^2.0`
 - [`laravel/mcp`](https://github.com/laravel/mcp) `^0.7.0`
 
 ### Compatibility matrix
 
-| This package | Laravel        | PHP           | laravel/boost  | laravel/mcp |
-|--------------|----------------|---------------|----------------|-------------|
-| `0.x`        | 11.x, 12.x     | 8.2, 8.3, 8.4 | 2.x            | 0.7.x       |
+| This package | Laravel          | PHP                          | laravel/boost  | laravel/mcp |
+|--------------|------------------|------------------------------|----------------|-------------|
+| `0.x`        | 11.x, 12.x, 13.x | 8.2, 8.3, 8.4 (8.3+ for L13) | 2.x            | 0.7.x       |
 
 `laravel/mcp` 0.7.x registers GET, POST, and DELETE routes on the configured path. Only POST handles MCP traffic; GET and DELETE return `405 Method Not Allowed` with `Allow: POST` per the current upstream implementation. The package wraps all three verbs in your configured middleware so the endpoint cannot be probed without authorization.
 
 ## Installation
 
 ```bash
-composer require ramhaidar/laravel-boost-streamable-http
+composer require --dev ramhaidar/laravel-boost-streamable-http
 ```
+
+This is a developer-tool transport, so install it as a dev dependency unless you intentionally want it available outside local/dev installs.
 
 The service provider is auto-registered through Laravel package discovery.
 
