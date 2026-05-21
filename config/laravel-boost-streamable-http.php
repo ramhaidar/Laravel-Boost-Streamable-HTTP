@@ -77,4 +77,42 @@ return [
 
     'warn_unprotected_in_production' => env('LARAVEL_BOOST_STREAMABLE_HTTP_WARN_UNPROTECTED', true),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Auto-Resolve CLI PHP Binary
+    |--------------------------------------------------------------------------
+    |
+    | Laravel Boost runs each MCP tool call in a subprocess that invokes
+    | `php artisan boost:execute-tool ...`. Boost defaults the php binary to
+    | PHP_BINARY, which under PHP-FPM, Apache mod_php, or php-cgi resolves to
+    | the SAPI binary (php-fpm/php-cgi) instead of the CLI binary. The
+    | subprocess then emits HTTP headers and skips console-only service
+    | registrations, so the Boost console command is never registered and
+    | tool calls fail with:
+    |
+    |     "Process tool execution failed:
+    |       ERROR  There are no commands defined in the \"boost\" namespace."
+    |
+    | When this option is true (default), the package detects a CLI php binary
+    | and writes it to `boost.executable_paths.php` for you, but only if you
+    | have not already configured `boost.executable_paths.php` yourself.
+    |
+    */
+
+    'auto_resolve_php_binary' => env('LARAVEL_BOOST_STREAMABLE_HTTP_AUTO_RESOLVE_PHP_BINARY', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | PHP Binary Override
+    |--------------------------------------------------------------------------
+    |
+    | Optional explicit path to a CLI php binary. When set, this value is
+    | written to `boost.executable_paths.php` (subject to
+    | `auto_resolve_php_binary`). Leave null to let the package discover one
+    | automatically via Symfony's PhpExecutableFinder.
+    |
+    */
+
+    'php_binary' => env('LARAVEL_BOOST_STREAMABLE_HTTP_PHP_BINARY'),
+
 ];

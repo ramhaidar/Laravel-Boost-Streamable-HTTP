@@ -89,6 +89,8 @@ return [
     'prefix' => env('LARAVEL_BOOST_STREAMABLE_HTTP_PREFIX'),
     'as' => env('LARAVEL_BOOST_STREAMABLE_HTTP_NAME_PREFIX'),
     'warn_unprotected_in_production' => env('LARAVEL_BOOST_STREAMABLE_HTTP_WARN_UNPROTECTED', true),
+    'auto_resolve_php_binary' => env('LARAVEL_BOOST_STREAMABLE_HTTP_AUTO_RESOLVE_PHP_BINARY', true),
+    'php_binary' => env('LARAVEL_BOOST_STREAMABLE_HTTP_PHP_BINARY'),
 ];
 ```
 
@@ -123,6 +125,41 @@ If the endpoint is enabled in the `production` environment **and** no middleware
 ```env
 LARAVEL_BOOST_STREAMABLE_HTTP_WARN_UNPROTECTED=false
 ```
+
+### CLI PHP binary auto-resolution
+
+Laravel Boost runs each MCP tool call in a subprocess that invokes `php artisan boost:execute-tool ...`. Boost defaults that subprocess to `PHP_BINARY`, which under PHP-FPM, Apache mod_php, or `php-cgi` resolves to the **SAPI** binary, not the CLI binary. The subprocess then emits HTTP headers (`X-Powered-By`, `Content-type`) and skips console-only service registrations, so the `boost:execute-tool` command is never registered. The endpoint then surfaces:
+
+```
+Process tool execution failed:
+  ERROR  There are no commands defined in the "boost" namespace.
+```
+
+To prevent that, this package detects a CLI `php` binary at boot and writes it to `boost.executable_paths.php` for you. The discovery order is:
+
+1. Symfony's `PhpExecutableFinder`
+2. The first `php` on `PATH` (filtering out `php-cgi`, `php-fpm`)
+3. `PHP_BINDIR` + `php` / `php.exe`
+
+Auto-resolution skips when:
+
+- `boost.executable_paths.php` is already set
+- `auto_resolve_php_binary` is `false`
+- The current `PHP_BINARY` already looks like a CLI php binary (so CLI invocations are unaffected)
+
+Override the resolved path manually:
+
+```env
+LARAVEL_BOOST_STREAMABLE_HTTP_PHP_BINARY=/usr/bin/php8.3
+```
+
+Disable auto-resolution entirely:
+
+```env
+LARAVEL_BOOST_STREAMABLE_HTTP_AUTO_RESOLVE_PHP_BINARY=false
+```
+
+You can also set `BOOST_PHP_EXECUTABLE_PATH` directly. Boost reads that into `boost.executable_paths.php`, and this package will not overwrite it.
 
 ## Security warning
 
@@ -169,6 +206,12 @@ Exact client config syntax varies by MCP client (Claude Desktop, Cursor, Continu
 
 **`Class "Laravel\\Mcp\\Facades\\Mcp" not found`**
 - `laravel/mcp` is not installed. Run `composer require laravel/mcp`.
+
+**`Process tool execution failed: ERROR  There are no commands defined in the "boost" namespace.`**
+- This means the Boost tool subprocess ran under PHP-FPM / mod_php / php-cgi instead of the CLI binary, so the `boost:execute-tool` command was never registered. By default this package auto-resolves a CLI php binary and writes it to `boost.executable_paths.php`. If the error still appears:
+    - Set `LARAVEL_BOOST_STREAMABLE_HTTP_PHP_BINARY` to the absolute path of your CLI php binary (e.g. `/usr/bin/php8.3` or `C:\php\php.exe`).
+    - Or set `BOOST_PHP_EXECUTABLE_PATH` directly. Boost reads that into `boost.executable_paths.php` and this package will not overwrite it.
+    - Run `php artisan config:clear` after changing env values, then re-cache if you cache config.
 
 **Warning in production logs about unprotected endpoint**
 - Configure `laravel-boost-streamable-http.middleware`, disable the endpoint in production, or set `LARAVEL_BOOST_STREAMABLE_HTTP_WARN_UNPROTECTED=false` to silence.

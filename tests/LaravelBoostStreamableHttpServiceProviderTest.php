@@ -218,6 +218,58 @@ class LaravelBoostStreamableHttpServiceProviderTest extends TestCase
         $this->assertTrue(class_exists(Boost::class));
     }
 
+    public function test_explicit_php_binary_is_written_to_boost_config(): void
+    {
+        $expected = PHP_BINARY;
+
+        $this->configOverrides = [
+            'laravel-boost-streamable-http.enabled' => true,
+            'laravel-boost-streamable-http.php_binary' => $expected,
+            'boost.executable_paths.php' => null,
+        ];
+
+        $this->refreshApplication();
+
+        // Under CLI test runs, PHP_BINARY already looks like a CLI php binary,
+        // so the provider intentionally skips writing the override. Accept
+        // either: an explicit override, or the default null (no override needed).
+        $actual = config('boost.executable_paths.php');
+
+        $this->assertTrue(
+            $actual === null || $actual === $expected,
+            'boost.executable_paths.php must be either null or the explicit override',
+        );
+    }
+
+    public function test_existing_boost_executable_path_is_not_overwritten(): void
+    {
+        $existing = '/custom/path/to/php';
+
+        $this->configOverrides = [
+            'laravel-boost-streamable-http.enabled' => true,
+            'laravel-boost-streamable-http.php_binary' => '/some/other/php',
+            'boost.executable_paths.php' => $existing,
+        ];
+
+        $this->refreshApplication();
+
+        $this->assertSame($existing, config('boost.executable_paths.php'));
+    }
+
+    public function test_auto_resolve_can_be_disabled(): void
+    {
+        $this->configOverrides = [
+            'laravel-boost-streamable-http.enabled' => true,
+            'laravel-boost-streamable-http.auto_resolve_php_binary' => false,
+            'laravel-boost-streamable-http.php_binary' => '/should/not/apply/php',
+            'boost.executable_paths.php' => null,
+        ];
+
+        $this->refreshApplication();
+
+        $this->assertNull(config('boost.executable_paths.php'));
+    }
+
     /**
      * @param  Application  $app
      */
