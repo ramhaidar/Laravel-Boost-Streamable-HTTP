@@ -30,6 +30,16 @@ jobs:
             testbench: '^9.5'
           - laravel: '12.*'
             testbench: '^10.0'
+          - php: '8.3'
+            laravel: '13.*'
+            testbench: '^11.0'
+            boost: '^2.0'
+            mcp: '^0.7.0'
+          - php: '8.4'
+            laravel: '13.*'
+            testbench: '^11.0'
+            boost: '^2.0'
+            mcp: '^0.7.0'
 
     steps:
       - name: Checkout
