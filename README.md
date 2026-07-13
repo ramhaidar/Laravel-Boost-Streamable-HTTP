@@ -18,20 +18,30 @@ It does not modify or fork Laravel Boost. It is a thin opt-in service provider.
 - PHP `^8.2` (PHP `^8.3` required for Laravel 13)
 - Laravel 11, 12, or 13
 - [`laravel/boost`](https://github.com/laravel/boost) `^2.0`
-- [`laravel/mcp`](https://github.com/laravel/mcp) `^0.7.0`
+- [`laravel/mcp`](https://github.com/laravel/mcp) `^0.7.0 || ^0.8.0`
 
 ### Compatibility matrix
 
 | This package | Laravel          | PHP                          | laravel/boost  | laravel/mcp |
 |--------------|------------------|------------------------------|----------------|-------------|
-| `0.x`        | 11.x, 12.x, 13.x | 8.2, 8.3, 8.4 (8.3+ for L13) | 2.x            | 0.7.x       |
+| `dev-main`   | 11.x, 12.x, 13.x where compatible | 8.2, 8.3, 8.4 (8.3+ for L13) | 2.x            | 0.7.x, 0.8.x |
 
-`laravel/mcp` 0.7.x registers GET, POST, and DELETE routes on the configured path. Only POST handles MCP traffic; GET and DELETE return `405 Method Not Allowed` with `Allow: POST` per the current upstream implementation. The package wraps all three verbs in your configured middleware so the endpoint cannot be probed without authorization.
+`laravel/mcp` 0.7.x and 0.8.x register GET, POST, and DELETE routes on the configured path. Only POST handles MCP traffic; GET and DELETE return `405 Method Not Allowed` with `Allow: POST` per the current upstream implementation. The package wraps all three verbs in your configured middleware so the endpoint cannot be probed without authorization.
 
 ## Installation
 
+This package has no tagged release on Packagist yet. Install it directly from GitHub by registering the VCS repository:
+
 ```bash
-composer require --dev ramhaidar/laravel-boost-streamable-http
+composer config repositories.laravel-boost-streamable-http vcs https://github.com/ramhaidar/laravel-boost-streamable-http
+
+composer require --dev "ramhaidar/laravel-boost-streamable-http:dev-main"
+```
+
+If your project has locked dependencies in `composer.lock`, add `-W` to update related dependencies:
+
+```bash
+composer require --dev "ramhaidar/laravel-boost-streamable-http:dev-main" -W
 ```
 
 This is a developer-tool transport, so install it as a dev dependency unless you intentionally want it available outside local/dev installs.
@@ -199,7 +209,17 @@ Exact client config syntax varies by MCP client (Claude Desktop, Cursor, Continu
 - If you cache routes (`php artisan route:cache`), re-cache after enabling.
 
 **405 Method Not Allowed on GET or DELETE**
-- That is expected behavior of `laravel/mcp` 0.7.x. The MCP spec uses POST for client-to-server calls. The current upstream implementation returns 405 on GET and DELETE; only POST handles MCP traffic.
+- That is expected behavior of `laravel/mcp`. The MCP spec uses POST for client-to-server calls. The upstream implementation returns 405 on GET and DELETE; only POST handles MCP traffic.
+
+**Could not find a matching version of package ramhaidar/laravel-boost-streamable-http**
+- The package is not published on Packagist. Register the GitHub repository and require `dev-main`:
+  ```bash
+  composer config repositories.laravel-boost-streamable-http vcs https://github.com/ramhaidar/laravel-boost-streamable-http
+  composer require --dev "ramhaidar/laravel-boost-streamable-http:dev-main"
+  ```
+
+**`laravel/mcp is fixed to v0.8.x but the package requires ^0.7.0`**
+- This package now supports both MCP 0.7 and 0.8. Update to the latest version which widens the constraint to `^0.7.0 || ^0.8.0`.
 
 **`Class "Laravel\\Boost\\Mcp\\Boost" not found`**
 - `laravel/boost` is not installed in this app, or the version you use no longer ships that class. Run `composer require laravel/boost` and verify the installed version exposes `Laravel\Boost\Mcp\Boost`.
