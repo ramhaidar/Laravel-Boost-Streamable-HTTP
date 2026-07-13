@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Laravel MCP 0.8 support. Verified that `Mcp::web()` and the `Mcp` facade API are identical between MCP 0.7 and 0.8 — no implementation changes required.
+- GitHub VCS installation instructions. The package is not on Packagist; users register the repository and require `dev-main`.
+- Composer troubleshooting documentation for "Could not find a matching version" and "laravel/mcp is fixed to v0.8.x" errors.
+
+### Changed
+- Widened `laravel/mcp` Composer constraint from `^0.7.0` to `^0.7.0 || ^0.8.0` to support both MCP 0.7 and 0.8.
+- Updated CI matrix to test MCP 0.7 and 0.8 across Laravel 11, 12, and 13.
+- Updated compatibility matrix in README to show MCP 0.7.x and 0.8.x support.
+- Updated installation documentation to use GitHub VCS-based installation.
+
+### Added
 - Auto-resolve a CLI `php` binary at boot and write it to `boost.executable_paths.php` when the package is enabled. Fixes `Process tool execution failed: ERROR There are no commands defined in the "boost" namespace.` under PHP-FPM, Apache mod_php, and `php-cgi`, where Boost's default `PHP_BINARY` resolves to the SAPI binary. Discovery uses Symfony's `PhpExecutableFinder`, then `ExecutableFinder('php')`, then `PHP_BINDIR`. Skips when `boost.executable_paths.php` is already set, when `auto_resolve_php_binary` is `false`, or when `PHP_BINARY` already looks like a CLI php binary.
 - `auto_resolve_php_binary` config (env: `LARAVEL_BOOST_STREAMABLE_HTTP_AUTO_RESOLVE_PHP_BINARY`, default `true`) to toggle the behavior.
 - `php_binary` config (env: `LARAVEL_BOOST_STREAMABLE_HTTP_PHP_BINARY`) to manually pin the CLI php binary used by Boost's tool subprocess.
