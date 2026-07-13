@@ -26,10 +26,13 @@ jobs:
         boost: ['^2.0']
         mcp: ['^0.7.0']
         include:
+          # Laravel 11 + MCP 0.7
           - laravel: '11.*'
             testbench: '^9.5'
+          # Laravel 12 + MCP 0.7
           - laravel: '12.*'
             testbench: '^10.0'
+          # Laravel 13 + MCP 0.7
           - php: '8.3'
             laravel: '13.*'
             testbench: '^11.0'
@@ -40,6 +43,34 @@ jobs:
             testbench: '^11.0'
             boost: '^2.0'
             mcp: '^0.7.0'
+          # Laravel 11 + MCP 0.8
+          - php: '8.2'
+            laravel: '11.*'
+            testbench: '^9.5'
+            boost: '^2.0'
+            mcp: '^0.8.0'
+          - php: '8.3'
+            laravel: '11.*'
+            testbench: '^9.5'
+            boost: '^2.0'
+            mcp: '^0.8.0'
+          # Laravel 12 + MCP 0.8
+          - php: '8.3'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '^2.0'
+            mcp: '^0.8.0'
+          # Laravel 13 + MCP 0.8
+          - php: '8.3'
+            laravel: '13.*'
+            testbench: '^11.0'
+            boost: '^2.0'
+            mcp: '^0.8.0'
+          - php: '8.4'
+            laravel: '13.*'
+            testbench: '^11.0'
+            boost: '^2.0'
+            mcp: '^0.8.0'
 
     steps:
       - name: Checkout
