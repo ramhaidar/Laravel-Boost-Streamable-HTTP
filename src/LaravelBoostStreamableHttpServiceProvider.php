@@ -144,14 +144,36 @@ class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
      * Best-effort CLI PHP binary discovery.
      *
      * Strategy:
-     *   1. Scan every system PATH entry for `php` / `php.exe` / `php.bat` /
+     *   1. Check the CLI sibling of the active SAPI binary (for example,
+     *      `php.exe` beside `php-cgi.exe`).
+     *   2. Scan every system PATH entry for `php` / `php.exe` / `php.bat` /
      *      `php.cmd` (equivalent to `where.exe php` / `which -a php`),
      *      skipping cgi/fpm names and version-manager shims.
-     *   2. PHP_BINDIR + 'php' / 'php.exe' as a final fallback.
+     *   3. PHP_BINDIR + 'php' / 'php.exe' as a final fallback.
      */
     private function discoverCliPhpBinary(): ?string
     {
-        // 1. Check all candidates from system PATH (equivalent to `where.exe php` / `which -a php`)
+        // 1. Check the CLI sibling of the active SAPI binary first.
+        //    This is important for Apache/PHP-CGI installations where PATH only
+        //    contains a version-manager shim and PHP_BINARY points to php-cgi.
+        $phpBinary = defined('PHP_BINARY') ? PHP_BINARY : '';
+        $binaryDirectory = $phpBinary !== '' ? dirname($phpBinary) : '';
+        $siblingCandidates = $binaryDirectory !== ''
+            ? [
+                $binaryDirectory.DIRECTORY_SEPARATOR.'php',
+                $binaryDirectory.DIRECTORY_SEPARATOR.'php.exe',
+                $binaryDirectory.DIRECTORY_SEPARATOR.'php-cli',
+                $binaryDirectory.DIRECTORY_SEPARATOR.'php-cli.exe',
+            ]
+            : [];
+
+        foreach ($siblingCandidates as $candidate) {
+            if (is_file($candidate) && $this->looksLikeCliPhp($candidate)) {
+                return $candidate;
+            }
+        }
+
+        // 2. Check all candidates from system PATH (equivalent to `where.exe php` / `which -a php`)
         $pathEnv = getenv('PATH') ?: getenv('Path') ?: '';
         $dirs = array_filter(explode(PATH_SEPARATOR, $pathEnv));
 
@@ -167,7 +189,7 @@ class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
             }
         }
 
-        // 2. Fallback: PHP_BINDIR
+        // 3. Fallback: PHP_BINDIR
         $bindir = defined('PHP_BINDIR') ? PHP_BINDIR : '';
 
         if ($bindir !== '') {
