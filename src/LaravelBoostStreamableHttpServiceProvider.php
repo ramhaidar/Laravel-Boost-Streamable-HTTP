@@ -11,8 +11,6 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Boost\Mcp\Boost;
 use Laravel\Mcp\Facades\Mcp;
 use RuntimeException;
-use Symfony\Component\Process\ExecutableFinder;
-use Symfony\Component\Process\PhpExecutableFinder;
 
 class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
 {
@@ -146,30 +144,30 @@ class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
      * Best-effort CLI PHP binary discovery.
      *
      * Strategy:
-     *   1. Symfony PhpExecutableFinder (handles most setups, including Herd/Valet).
-     *   2. ExecutableFinder for `php` on PATH (filtered to skip cgi/fpm names).
-     *   3. PHP_BINDIR + 'php' / 'php.exe' as a final fallback.
+     *   1. Scan every system PATH entry for `php` / `php.exe` / `php.bat` /
+     *      `php.cmd` (equivalent to `where.exe php` / `which -a php`),
+     *      skipping cgi/fpm names and version-manager shims.
+     *   2. PHP_BINDIR + 'php' / 'php.exe' as a final fallback.
      */
     private function discoverCliPhpBinary(): ?string
     {
-        if (class_exists(PhpExecutableFinder::class)) {
-            $finder = new PhpExecutableFinder;
-            $found = $finder->find(false);
+        // 1. Check all candidates from system PATH (equivalent to `where.exe php` / `which -a php`)
+        $pathEnv = getenv('PATH') ?: getenv('Path') ?: '';
+        $dirs = array_filter(explode(PATH_SEPARATOR, $pathEnv));
 
-            if (is_string($found) && $found !== '' && $this->looksLikeCliPhp($found)) {
-                return $found;
+        $extensions = PHP_OS_FAMILY === 'Windows' ? ['.exe', '.bat', '.cmd', ''] : [''];
+
+        foreach ($dirs as $dir) {
+            foreach ($extensions as $ext) {
+                $candidate = rtrim($dir, '\\/').DIRECTORY_SEPARATOR.'php'.$ext;
+
+                if (is_file($candidate) && $this->looksLikeCliPhp($candidate)) {
+                    return $candidate;
+                }
             }
         }
 
-        if (class_exists(ExecutableFinder::class)) {
-            $finder = new ExecutableFinder;
-            $found = $finder->find('php');
-
-            if (is_string($found) && $found !== '' && $this->looksLikeCliPhp($found)) {
-                return $found;
-            }
-        }
-
+        // 2. Fallback: PHP_BINDIR
         $bindir = defined('PHP_BINDIR') ? PHP_BINDIR : '';
 
         if ($bindir !== '') {
@@ -192,26 +190,28 @@ class LaravelBoostStreamableHttpServiceProvider extends ServiceProvider
      * Heuristic: does this path look like a CLI php binary?
      *
      * Recognizes typical CLI names ("php", "php.exe", "php8.3") and rejects
-     * SAPI binaries ("php-fpm", "php-cgi", "apache2", "httpd", etc.).
+     * SAPI binaries ("php-fpm", "php-cgi", "apache2", "httpd", etc.) and
+     * version-manager shims (mise, asdf, volta, etc.).
      */
     private function looksLikeCliPhp(string $path): bool
     {
         $name = strtolower(basename($path));
 
-        if ($name === '') {
+        if ($name === '' || ! str_starts_with($name, 'php')) {
             return false;
         }
 
-        // Must look like a php binary by name.
-        if (! str_starts_with($name, 'php')) {
-            return false;
-        }
-
-        // Reject SAPI variants by substring.
+        // Reject SAPI variants.
         foreach (['cgi', 'fpm'] as $bad) {
             if (str_contains($name, $bad)) {
                 return false;
             }
+        }
+
+        // Reject version-manager shims (mise, asdf, volta, etc.).
+        $normalized = str_replace('\\', '/', strtolower($path));
+        if (str_contains($normalized, '/shims/')) {
+            return false;
         }
 
         return true;

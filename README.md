@@ -147,9 +147,10 @@ Process tool execution failed:
 
 To prevent that, this package detects a CLI `php` binary at boot and writes it to `boost.executable_paths.php` for you. The discovery order is:
 
-1. Symfony's `PhpExecutableFinder`
-2. The first `php` on `PATH` (filtering out `php-cgi`, `php-fpm`)
-3. `PHP_BINDIR` + `php` / `php.exe`
+1. Scan every `PATH` entry for `php` / `php.exe` / `php.bat` / `php.cmd`
+   (like `where.exe php` / `which -a php`), skipping `php-cgi`, `php-fpm`,
+   and version-manager shims (e.g. `D:\Mise\shims\php.exe`)
+2. `PHP_BINDIR` + `php` / `php.exe`
 
 Auto-resolution skips when:
 
