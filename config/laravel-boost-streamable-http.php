@@ -109,7 +109,7 @@ return [
     | Optional explicit path to a CLI php binary. When set, this value is
     | written to `boost.executable_paths.php` (subject to
     | `auto_resolve_php_binary`). Leave null to let the package discover one
-    | automatically via Symfony's PhpExecutableFinder.
+    | automatically by scanning the system PATH.
     |
     */
 
