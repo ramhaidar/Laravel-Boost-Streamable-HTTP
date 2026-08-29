@@ -3,6 +3,8 @@ name: tests
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main]
 
@@ -23,61 +25,163 @@ jobs:
       matrix:
         php: ['8.2', '8.3', '8.4']
         laravel: ['11.*', '12.*']
-        boost: ['^2.0']
+        boost: ['^2.4.5']
         mcp: ['^0.7.0']
         include:
-          # Laravel 11 + MCP 0.7
+          # Testbench floor per Laravel major
           - laravel: '11.*'
             testbench: '^9.5'
-          # Laravel 12 + MCP 0.7
           - laravel: '12.*'
             testbench: '^10.0'
-          # Laravel 13 + MCP 0.7
+          # Laravel 13 + MCP 0.7 (Laravel 13 requires PHP ^8.3)
           - php: '8.3'
             laravel: '13.*'
             testbench: '^11.0'
-            boost: '^2.0'
+            boost: '^2.4.5'
             mcp: '^0.7.0'
           - php: '8.4'
             laravel: '13.*'
             testbench: '^11.0'
-            boost: '^2.0'
+            boost: '^2.4.5'
             mcp: '^0.7.0'
+          - php: '8.5'
+            laravel: '13.*'
+            testbench: '^11.0'
+            boost: '^2.4.5'
+            mcp: '^0.7.0'
+          - php: '8.5'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '^2.4.5'
+            mcp: '^0.7.0'
+          # MCP 0.8 floor: Boost 2.4.10+ (Boost v2.4.10 first allowed laravel/mcp ^0.8.0)
           # Laravel 11 + MCP 0.8
           - php: '8.2'
             laravel: '11.*'
             testbench: '^9.5'
-            boost: '^2.0'
+            boost: '^2.4.10'
             mcp: '^0.8.0'
           - php: '8.3'
             laravel: '11.*'
             testbench: '^9.5'
-            boost: '^2.0'
+            boost: '^2.4.10'
+            mcp: '^0.8.0'
+          - php: '8.4'
+            laravel: '11.*'
+            testbench: '^9.5'
+            boost: '^2.4.10'
             mcp: '^0.8.0'
           # Laravel 12 + MCP 0.8
+          - php: '8.2'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '^2.4.10'
+            mcp: '^0.8.0'
           - php: '8.3'
             laravel: '12.*'
             testbench: '^10.0'
-            boost: '^2.0'
+            boost: '^2.4.10'
+            mcp: '^0.8.0'
+          - php: '8.4'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '^2.4.10'
+            mcp: '^0.8.0'
+          - php: '8.5'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '^2.4.10'
             mcp: '^0.8.0'
           # Laravel 13 + MCP 0.8
           - php: '8.3'
             laravel: '13.*'
             testbench: '^11.0'
-            boost: '^2.0'
+            boost: '^2.4.10'
             mcp: '^0.8.0'
           - php: '8.4'
             laravel: '13.*'
             testbench: '^11.0'
-            boost: '^2.0'
+            boost: '^2.4.10'
             mcp: '^0.8.0'
+          - php: '8.5'
+            laravel: '13.*'
+            testbench: '^11.0'
+            boost: '^2.4.10'
+            mcp: '^0.8.0'
+          # MCP 0.9 floor: Boost 2.4.13+ (Boost v2.4.13 first allowed laravel/mcp ^0.9.0)
+          # Laravel 11 + MCP 0.9
+          - php: '8.2'
+            laravel: '11.*'
+            testbench: '^9.5'
+            boost: '^2.4.13'
+            mcp: '^0.9.0'
+          - php: '8.3'
+            laravel: '11.*'
+            testbench: '^9.5'
+            boost: '^2.4.13'
+            mcp: '^0.9.0'
+          - php: '8.4'
+            laravel: '11.*'
+            testbench: '^9.5'
+            boost: '^2.4.13'
+            mcp: '^0.9.0'
+          # Laravel 12 + MCP 0.9
+          - php: '8.2'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '^2.4.13'
+            mcp: '^0.9.0'
+          - php: '8.3'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '^2.4.13'
+            mcp: '^0.9.0'
+          - php: '8.4'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '^2.4.13'
+            mcp: '^0.9.0'
+          - php: '8.5'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '^2.4.13'
+            mcp: '^0.9.0'
+          # Laravel 13 + MCP 0.9
+          - php: '8.3'
+            laravel: '13.*'
+            testbench: '^11.0'
+            boost: '^2.4.13'
+            mcp: '^0.9.0'
+          - php: '8.4'
+            laravel: '13.*'
+            testbench: '^11.0'
+            boost: '^2.4.13'
+            mcp: '^0.9.0'
+          - php: '8.5'
+            laravel: '13.*'
+            testbench: '^11.0'
+            boost: '^2.4.13'
+            mcp: '^0.9.0'
+          # Exact-version floor rows: verify the real minimum compatible Boost/MCP pairs
+          - php: '8.3'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '2.4.10'
+            mcp: '0.8.0'
+            floor: '2.4.10/0.8.0'
+          - php: '8.3'
+            laravel: '12.*'
+            testbench: '^10.0'
+            boost: '2.4.13'
+            mcp: '0.9.0'
+            floor: '2.4.13/0.9.0'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@159772ba0ff77dc1199443579e0abd6c32bb1fb2
         with:
           php-version: ${{ matrix.php }}
           extensions: mbstring, intl, json, openssl, dom, fileinfo
@@ -85,7 +189,7 @@ jobs:
           tools: composer:v2
 
       - name: Cache Composer
-        uses: actions/cache@v4
+        uses: actions/cache@3edfce9056124e459a23f683a21433670d47daca
         with:
           path: ~/.composer/cache/files
           key: deps-${{ runner.os }}-php${{ matrix.php }}-l${{ matrix.laravel }}-boost${{ matrix.boost }}-mcp${{ matrix.mcp }}-${{ hashFiles('**/composer.json') }}
@@ -104,14 +208,29 @@ jobs:
       - name: Install dependencies
         run: composer update --prefer-dist --no-interaction --no-progress
 
+      - name: Show resolved Boost/MCP versions
+        run: |
+          composer show laravel/boost
+          composer show laravel/mcp
+
+      - name: Verify exact minimum Boost/MCP versions
+        if: matrix.floor != ''
+        run: |
+          composer show laravel/boost | grep "versions" | grep -F "${{ matrix.boost }}"
+          composer show laravel/mcp | grep "versions" | grep -F "${{ matrix.mcp }}"
+
       - name: Run tests
         run: vendor/bin/phpunit
 
       - name: Upload phpunit logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: phpunit-php${{ matrix.php }}-l${{ matrix.laravel }}
+          # Composer-constraint matrix values contain characters upload-artifact
+          # rejects (e.g. "*"), so use the matrix job index for a unique, valid name.
+          name: phpunit-${{ strategy.job-index }}-php${{ matrix.php }}
+          include-hidden-files: true
+          if-no-files-found: ignore
           path: |
             .phpunit.cache
 
@@ -121,10 +240,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@159772ba0ff77dc1199443579e0abd6c32bb1fb2
         with:
           php-version: '8.2'
           extensions: mbstring, intl, json, openssl, dom, fileinfo
@@ -138,7 +257,7 @@ jobs:
             "illuminate/routing:^11.0" \
             "illuminate/support:^11.0" \
             "laravel/mcp:^0.7.0" \
-            "laravel/boost:^2.0"
+            "laravel/boost:^2.4.5"
           composer require --dev --no-update --no-interaction \
             "orchestra/testbench:^9.5"
 
@@ -150,9 +269,11 @@ jobs:
 
       - name: Upload phpunit logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: phpunit-prefer-lowest
+          include-hidden-files: true
+          if-no-files-found: ignore
           path: |
             .phpunit.cache
 
@@ -162,10 +283,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@159772ba0ff77dc1199443579e0abd6c32bb1fb2
         with:
           php-version: '8.3'
           extensions: mbstring, intl, json, openssl, dom, fileinfo
@@ -184,10 +305,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@159772ba0ff77dc1199443579e0abd6c32bb1fb2
         with:
           php-version: '8.3'
           extensions: mbstring, intl, json, openssl, dom, fileinfo
