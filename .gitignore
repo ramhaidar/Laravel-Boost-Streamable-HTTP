@@ -1,5 +1,6 @@
 /vendor
 /node_modules
+.pi/
 composer.lock
 composer.phar
 .phpunit.cache
@@ -9,3 +10,11 @@ phpunit.xml
 .vscode
 .DS_Store
 Thumbs.db
+.env
+.env.*
+!.env.example
+auth.json
+*.log
+*.zip
+*.7z
+.7z-filelist.tmp
