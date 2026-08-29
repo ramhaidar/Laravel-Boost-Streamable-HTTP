@@ -4,10 +4,9 @@
 
 If you discover a security issue in `ramhaidar/laravel-boost-streamable-http`, please report it privately. Do **not** open a public GitHub issue.
 
-Use one of the following channels:
+Use the following channel:
 
 - GitHub Security Advisory: https://github.com/ramhaidar/laravel-boost-streamable-http/security/advisories/new
-- Direct email to the repository owner if you cannot use GitHub's advisory flow.
 
 When reporting, include:
 
@@ -31,11 +30,12 @@ In-scope vulnerabilities (examples):
 - Default behavior that exposes the endpoint without explicit opt-in.
 - Configuration patterns that silently weaken Laravel's middleware stack.
 - Information leaks from the package itself (not from `laravel/boost` or `laravel/mcp` upstream).
+- A bypass or failure of the default fail-closed protected-environment guard that lets the endpoint register without middleware when the operator did not explicitly enable the escape hatch.
 
 Out-of-scope:
 
 - Vulnerabilities in `laravel/boost` or `laravel/mcp` themselves — please report those upstream.
-- Misuse such as enabling the endpoint in production with no middleware. The README warns against this; it is not a vulnerability in the package.
+- Operator-accepted risk: explicitly setting `allow_unprotected_in_production=true` and then exposing the endpoint without protection. This is a deliberate opt-out of the fail-closed guard, documented in the README, and is not a vulnerability in the package.
 - Issues that require an attacker to already have local code execution against the developer's machine.
 
 Thanks for keeping the ecosystem safe.
