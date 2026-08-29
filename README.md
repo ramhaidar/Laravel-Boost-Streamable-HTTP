@@ -15,18 +15,24 @@ It does not modify or fork Laravel Boost. It is a thin opt-in service provider.
 
 ## Requirements
 
-- PHP `^8.2` (PHP `^8.3` required for Laravel 13)
-- Laravel 11, 12, or 13
-- [`laravel/boost`](https://github.com/laravel/boost) `^2.0`
-- [`laravel/mcp`](https://github.com/laravel/mcp) `^0.7.0 || ^0.8.0`
+- PHP `^8.2` (PHP `^8.3` required for Laravel 13; PHP 8.5 tested in CI)
+- Laravel 11 (legacy/EOL support), 12, or 13
+- [`laravel/boost`](https://github.com/laravel/boost) `^2.4.5`
+- [`laravel/mcp`](https://github.com/laravel/mcp) `^0.7.0 || ^0.8.0 || ^0.9.0`
 
 ### Compatibility matrix
 
 | This package | Laravel          | PHP                          | laravel/boost  | laravel/mcp |
 |--------------|------------------|------------------------------|----------------|-------------|
-| `dev-main`   | 11.x, 12.x, 13.x where compatible | 8.2, 8.3, 8.4 (8.3+ for L13) | 2.x            | 0.7.x, 0.8.x |
+| `dev-main`   | 11.x (EOL)       | 8.2, 8.3, 8.4                | 2.4.5+        | 0.7.x, 0.8.x, 0.9.x |
+| `dev-main`   | 12.x             | 8.2, 8.3, 8.4, 8.5           | 2.4.5+        | 0.7.x, 0.8.x, 0.9.x |
+| `dev-main`   | 13.x             | 8.3, 8.4, 8.5                | 2.4.5+        | 0.7.x, 0.8.x, 0.9.x |
 
-`laravel/mcp` 0.7.x and 0.8.x register GET, POST, and DELETE routes on the configured path. Only POST handles MCP traffic; GET and DELETE return `405 Method Not Allowed` with `Allow: POST` per the current upstream implementation. The package wraps all three verbs in your configured middleware so the endpoint cannot be probed without authorization.
+`laravel/mcp` 0.7.x, 0.8.x, and 0.9.x register GET, POST, and DELETE routes on the configured path. Only POST handles MCP traffic; GET and DELETE return `405 Method Not Allowed` with `Allow: POST` per the current upstream implementation. The package wraps all three verbs in your configured middleware — if that middleware authenticates the caller, the endpoint cannot be probed without authorization.
+
+> **Note:** Boost began honoring `boost.executable_paths.php` in its ToolExecutor in **v2.4.2**, and this package's minimum is **v2.4.5** (the first Boost release compatible with its minimum `laravel/mcp ^0.7.0`). The minimum compatible Boost for each MCP line is **v2.4.5+** for MCP 0.7.x, **v2.4.10+** for MCP 0.8.x, and **v2.4.13+** for MCP 0.9.x. Composer resolves a compatible Boost/MCP pair from the package constraints, so not every Boost 2.4.5+ release is compatible with every MCP 0.7/0.8/0.9 version.
+
+> **Note:** Laravel 11's official security support ended on **March 12, 2026**. The package keeps testing against it for compatibility, but treats it as legacy/EOL support rather than a supported target.
 
 ## Installation
 
@@ -99,6 +105,8 @@ return [
     'prefix' => env('LARAVEL_BOOST_STREAMABLE_HTTP_PREFIX'),
     'as' => env('LARAVEL_BOOST_STREAMABLE_HTTP_NAME_PREFIX'),
     'warn_unprotected_in_production' => env('LARAVEL_BOOST_STREAMABLE_HTTP_WARN_UNPROTECTED', true),
+    'allow_unprotected_in_production' => env('LARAVEL_BOOST_STREAMABLE_HTTP_ALLOW_UNPROTECTED_IN_PRODUCTION', false),
+    'protected_environments' => ['production'],
     'auto_resolve_php_binary' => env('LARAVEL_BOOST_STREAMABLE_HTTP_AUTO_RESOLVE_PHP_BINARY', true),
     'php_binary' => env('LARAVEL_BOOST_STREAMABLE_HTTP_PHP_BINARY'),
 ];
@@ -112,7 +120,7 @@ You can protect the endpoint with any Laravel middleware, for example:
 'middleware' => ['auth:sanctum'],
 ```
 
-The configured middleware is applied to **every** verb that `Mcp::web()` registers (GET, POST, and DELETE), so unauthenticated probes cannot confirm the endpoint exists.
+The configured middleware is applied to **every** verb that `Mcp::web()` registers (GET, POST, and DELETE). If the middleware authenticates the caller, unauthenticated probes cannot confirm the endpoint exists; if it does not (for example `throttle` or `bindings`), the endpoint remains reachable and must be protected by real authentication.
 
 Different projects need different protection. There is no middleware default that fits every app, so this package ships with an empty middleware list and leaves the choice to you.
 
@@ -128,9 +136,25 @@ Set a subdomain, path prefix, or route name prefix:
 
 Leave any value `null` (or unset the environment variable) to skip that attribute.
 
-### Production warning log
+### Production fail-closed behavior
 
-If the endpoint is enabled in the `production` environment **and** no middleware is configured, the package writes a single warning to the application log on Artisan/console boot. The warning is gated on `runningInConsole()` to avoid spamming PHP-FPM request logs. It surfaces during commands like `php artisan serve`, `route:list`, `config:cache`, `queue:work`, or any deploy command. Set `warn_unprotected_in_production` to `false` to silence it:
+If the endpoint is enabled in a **protected environment** (default: `production`) **and** no middleware is configured, the package **refuses to register the endpoint** and throws a `RuntimeException`. This is a fail-closed safety default: Laravel Boost exposes powerful capabilities, so accidental exposure should fail loudly instead of silently registering an unprotected endpoint.
+
+This is a **missing-middleware guard, not an authentication guarantee**. The package cannot determine whether arbitrary middleware (e.g. `web`, `throttle`, `bindings`) authenticates the caller, so it only refuses the empty-middleware case. You are still responsible for configuring real authentication (for example `auth:sanctum`) before exposing the endpoint.
+
+Extend the guard to other environments (for example `staging` or `prod`) via the published config:
+
+```php
+'protected_environments' => ['production', 'staging'],
+```
+
+To explicitly accept the risk and register the endpoint anyway (for example, when protection is handled outside the middleware list, such as a VPN or a reverse-proxy allowlist), set:
+
+```env
+LARAVEL_BOOST_STREAMABLE_HTTP_ALLOW_UNPROTECTED_IN_PRODUCTION=true
+```
+
+When the escape hatch is set, the package writes a single warning to the application log on Artisan/console boot (gated on `runningInConsole()` to avoid spamming PHP-FPM request logs). Set `warn_unprotected_in_production` to `false` to silence it:
 
 ```env
 LARAVEL_BOOST_STREAMABLE_HTTP_WARN_UNPROTECTED=false
@@ -158,13 +182,21 @@ Auto-resolution skips when:
 
 - `boost.executable_paths.php` is already set
 - `auto_resolve_php_binary` is `false`
-- The current `PHP_BINARY` already looks like a CLI php binary (so CLI invocations are unaffected)
 
 Override the resolved path manually:
 
 ```env
 LARAVEL_BOOST_STREAMABLE_HTTP_PHP_BINARY=/usr/bin/php8.3
 ```
+
+The resolution precedence is:
+
+1. An existing, non-empty `boost.executable_paths.php` (never overwritten)
+2. The explicit `LARAVEL_BOOST_STREAMABLE_HTTP_PHP_BINARY` override
+3. The current `PHP_BINARY` when it is a usable CLI php binary **and** the current SAPI is exactly `cli` (this also repairs Boost's blank `BOOST_PHP_EXECUTABLE_PATH=` edge case)
+4. Best-effort discovery via the CLI sibling, `PATH`, and `PHP_BINDIR`
+
+The explicit override wins even when the application is already running through a CLI php binary, so you can intentionally pin a different PHP version for Boost's tool subprocess.
 
 Disable auto-resolution entirely:
 
@@ -185,7 +217,7 @@ Laravel Boost exposes powerful local-development capabilities, including applica
 - HTTPS
 - Network-level protection (VPN, IP allowlist, firewall, or local-only access)
 
-Prefer local-only usage. Production usage is **not recommended** unless you explicitly understand the risks and have applied strong protection. This package will not block you from enabling it in any environment, by design, but you should treat it as a developer tool.
+Prefer local-only usage. Production usage is **not recommended** unless you explicitly understand the risks and have applied strong protection. The package fails closed in configured protected environments when no middleware is configured, unless the explicit escape hatch is enabled — but you should still treat it as a developer tool.
 
 ## Example MCP client config
 
@@ -222,7 +254,7 @@ Exact client config syntax varies by MCP client (Claude Desktop, Cursor, Continu
   ```
 
 **`laravel/mcp is fixed to v0.8.x but the package requires ^0.7.0`**
-- This package now supports both MCP 0.7 and 0.8. Update to the latest version which widens the constraint to `^0.7.0 || ^0.8.0`.
+- This package now supports MCP 0.7, 0.8, and 0.9. Update to the latest version which widens the constraint to `^0.7.0 || ^0.8.0 || ^0.9.0`.
 
 **`Class "Laravel\\Boost\\Mcp\\Boost" not found`**
 - `laravel/boost` is not installed in this app, or the version you use no longer ships that class. Run `composer require laravel/boost` and verify the installed version exposes `Laravel\Boost\Mcp\Boost`.
@@ -236,14 +268,14 @@ Exact client config syntax varies by MCP client (Claude Desktop, Cursor, Continu
     - Or set `BOOST_PHP_EXECUTABLE_PATH` directly. Boost reads that into `boost.executable_paths.php` and this package will not overwrite it.
     - Run `php artisan config:clear` after changing env values, then re-cache if you cache config.
 
-**Warning in production logs about unprotected endpoint**
-- Configure `laravel-boost-streamable-http.middleware`, disable the endpoint in production, or set `LARAVEL_BOOST_STREAMABLE_HTTP_WARN_UNPROTECTED=false` to silence.
+**Warning in protected-environment logs about unprotected endpoint**
+- The warning is only emitted when the explicit escape hatch is enabled: a protected environment with no middleware **refuses to register** by default (`RuntimeException`). If you set `LARAVEL_BOOST_STREAMABLE_HTTP_ALLOW_UNPROTECTED_IN_PRODUCTION=true`, the endpoint registers and a single warning is written to the log on console boot. Silence it with `LARAVEL_BOOST_STREAMABLE_HTTP_WARN_UNPROTECTED=false`, or better, configure `laravel-boost-streamable-http.middleware`.
 
 **Route caching**
 - The package registers routes inside the service provider's `boot()` method. Standard `route:cache` works.
 
 **`config:cache` and env values**
-- Calls to `env()` inside the published config file return `null` after `php artisan config:cache` if the env variable was not set at cache time. If the endpoint stops responding after caching, run `php artisan config:clear`, set the env vars, then re-cache.
+- `php artisan config:cache` captures the resolved configuration values at cache-build time. Later `.env` changes do not affect those cached values. After changing these environment variables, run `php artisan config:clear` and then `php artisan config:cache` again if the app uses cached config.
 
 ## Compatibility
 
