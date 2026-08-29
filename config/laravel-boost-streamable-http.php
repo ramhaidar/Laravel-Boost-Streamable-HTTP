@@ -65,17 +65,60 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Warn When Enabled In Production With No Middleware
+    | Warn When Enabled In A Protected Environment With No Middleware
     |--------------------------------------------------------------------------
     |
     | When true (default), the package emits a warning to the application
-    | log if it is enabled in the 'production' environment without any
-    | middleware configured. The endpoint still registers; this is a
-    | reminder, not an enforcement. Disable to silence.
+    | log when the endpoint is enabled in any configured protected
+    | environment (see `protected_environments` below) without any middleware
+    | AND `allow_unprotected_in_production` is set to true (the fail-closed
+    | default refuses to register instead). The warning is a reminder, not an
+    | enforcement. Disable to silence.
     |
     */
 
     'warn_unprotected_in_production' => env('LARAVEL_BOOST_STREAMABLE_HTTP_WARN_UNPROTECTED', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Allow Unprotected Endpoint In Protected Environments
+    |--------------------------------------------------------------------------
+    |
+    | When false (default), the package refuses to register the endpoint if it
+    | is enabled in any configured protected environment (see
+    | `protected_environments` below, default `['production']`) without any
+    | middleware configured. This is a fail-closed safety default: Laravel
+    | Boost exposes powerful capabilities, so accidental exposure in a
+    | protected environment should fail loudly instead of silently
+    | registering an unauthenticated endpoint.
+    |
+    | Set this to true only if you explicitly understand the risk and want to
+    | register the endpoint anyway (for example, when protection is handled
+    | outside the middleware list, such as a VPN or a reverse proxy allowlist).
+    | The key name retains "in_production" for backward compatibility, but it
+    | applies to every environment listed in `protected_environments`.
+    |
+    */
+
+    'allow_unprotected_in_production' => env('LARAVEL_BOOST_STREAMABLE_HTTP_ALLOW_UNPROTECTED_IN_PRODUCTION', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Protected Environments
+    |--------------------------------------------------------------------------
+    |
+    | Environments in which the endpoint must not register without middleware
+    | (unless `allow_unprotected_in_production` is set to true). The default is
+    | `['production']`. Add environments such as `staging` or `prod` to extend
+    | the fail-closed guard to them.
+    |
+    | Note: this is a missing-middleware guard, not an authentication
+    | guarantee. The package cannot determine whether arbitrary middleware
+    | authenticates the caller, so it only refuses the empty-middleware case.
+    |
+    */
+
+    'protected_environments' => ['production'],
 
     /*
     |--------------------------------------------------------------------------
