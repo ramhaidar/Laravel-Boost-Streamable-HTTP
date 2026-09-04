@@ -62,6 +62,13 @@
         "analyse": "vendor/bin/phpstan analyse --memory-limit=-1"
     },
     "config": {
+        "policy": {
+            "advisories": {
+                "ignore": {
+                    "laravel/framework": "Transitive dev-only dependency via orchestra/testbench. This library never ships laravel/framework; consumers pin their own framework. Unblocks the Laravel 11 CI matrix while advisory blocking stays on for every other package."
+                }
+            }
+        },
         "sort-packages": true
     },
     "prefer-stable": true
