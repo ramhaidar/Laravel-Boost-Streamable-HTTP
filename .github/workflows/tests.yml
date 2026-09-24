@@ -176,7 +176,7 @@ jobs:
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@159772ba0ff77dc1199443579e0abd6c32bb1fb2
+        uses: shivammathur/setup-php@f3d967b8bc6d6fbb17cb0e2ffd56cf304d0290ba
         with:
           php-version: ${{ matrix.php }}
           extensions: mbstring, intl, json, openssl, dom, fileinfo
@@ -238,7 +238,7 @@ jobs:
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@159772ba0ff77dc1199443579e0abd6c32bb1fb2
+        uses: shivammathur/setup-php@f3d967b8bc6d6fbb17cb0e2ffd56cf304d0290ba
         with:
           php-version: '8.2'
           extensions: mbstring, intl, json, openssl, dom, fileinfo
@@ -281,7 +281,7 @@ jobs:
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@159772ba0ff77dc1199443579e0abd6c32bb1fb2
+        uses: shivammathur/setup-php@f3d967b8bc6d6fbb17cb0e2ffd56cf304d0290ba
         with:
           php-version: '8.3'
           extensions: mbstring, intl, json, openssl, dom, fileinfo
@@ -303,7 +303,7 @@ jobs:
         uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@159772ba0ff77dc1199443579e0abd6c32bb1fb2
+        uses: shivammathur/setup-php@f3d967b8bc6d6fbb17cb0e2ffd56cf304d0290ba
         with:
           php-version: '8.3'
           extensions: mbstring, intl, json, openssl, dom, fileinfo
