@@ -1,10 +1,13 @@
 version: 2
 
+# Dependabot runs once a month (first day of the month) to reduce
+# GitHub Actions storage/minute usage. Change `interval` back to
+# `weekly` if you want more frequent updates.
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     open-pull-requests-limit: 5
     commit-message:
       prefix: ci
@@ -13,7 +16,7 @@ updates:
   - package-ecosystem: composer
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     open-pull-requests-limit: 5
     commit-message:
       prefix: deps
